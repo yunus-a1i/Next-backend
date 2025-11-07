@@ -1,13 +1,17 @@
-import mongoose, { Schema, Types } from 'mongoose';
+import mongoose, { Schema, Types, Document, Model } from 'mongoose';
 
-interface Idrive {
+export interface Idrive {
   _id?: Types.ObjectId;
   userId: Types.ObjectId;
   interveiwPostId: Types.ObjectId;
   resume?: string;
 }
 
-const driveAttendiesSchema = new mongoose.Schema<Idrive>(
+export interface IdriveDocument extends Omit<Idrive, '_id'>, Document {
+  _id: Types.ObjectId;
+}
+
+const driveAttendiesSchema = new mongoose.Schema<IdriveDocument>(
   {
     userId: {
       type: Schema.Types.ObjectId,
@@ -26,4 +30,4 @@ const driveAttendiesSchema = new mongoose.Schema<Idrive>(
   { timestamps: true },
 );
 
-export const DriveAttendies = mongoose.model<Idrive>('DriveAttendies', driveAttendiesSchema);
+export const DriveAttendies: Model<IdriveDocument> = mongoose.model<IdriveDocument>('DriveAttendies', driveAttendiesSchema);

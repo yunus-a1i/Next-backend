@@ -1,51 +1,95 @@
 import bcrypt from 'bcryptjs';
-import mongoose, { Model, Types } from 'mongoose';
+import mongoose, {
+  Model,
+  Types,
+  Document,
+  Schema
+} from 'mongoose';
 import jwt, { type Secret } from 'jsonwebtoken';
 
+// Types for embedded experience, education, and project
+export type Experience = {
+  company: string;
+  position: string;
+  period: string;
+  description: string;
+};
+
+export type Education = {
+  institution: string;
+  degree: string;
+  period: string;
+};
+
+export type Project = {
+  projectName: string;
+  projectLink: string;
+  projectDescription?: string;
+};
+
+// Main user interface, with optional _id and typed arrays
 export interface Iuser {
   _id?: Types.ObjectId;
   name: string;
   password: string;
   bio?: string;
-  skills?: Array<string>;
-  experience?: Array<{
-    company: string;
-    position: string;
-    period: string;
-    description: string;
-  }>;
-  education?: Array<{
-    institution: string;
-    degree: string;
-    period: string;
-  }>;
+  skills?: string[];
+  experience?: Experience[];
+  education?: Education[];
   email: string;
   contact?: string;
   resumeLink?: string;
   profilePhotoLink?: string;
-  projects?: Array<project>;
+  projects?: Project[];
   accessToken?: string;
   refreshToken?: string;
   domain?: string;
   role?: string;
 }
 
-
+// Used to provide instance methods for User model
 export interface IuserMethods {
-  isPasswordCorrect: (password: string) => Promise<boolean>;
-  generateAccessToken: () => string;
-  generateRefreshToken: () => string;
+  isPasswordCorrect(this: IUserDocument, password: string): Promise<boolean>;
+  generateAccessToken(this: IUserDocument): string;
+  generateRefreshToken(this: IUserDocument): string;
 }
 
-export type UserModel = Model<Iuser, {}, IuserMethods>;
+// Document type with instance methods
+export type IUserDocument = Iuser & Document<Types.ObjectId> & IuserMethods;
 
-type project = {
-  projectName: string;
-  projectLink: string;
-  projectDescription?: string;
-};
+// Model type for statics
+export type UserModel = Model<IUserDocument, {}, IuserMethods>;
 
-const UserSchema = new mongoose.Schema<Iuser, UserModel, IuserMethods>(
+// Schemas for nested types
+const ExperienceSchema = new Schema<Experience>(
+  {
+    company: { type: String, required: true },
+    position: { type: String, required: true },
+    period: { type: String, required: true },
+    description: { type: String, required: true }
+  },
+  { _id: false }
+);
+
+const EducationSchema = new Schema<Education>(
+  {
+    institution: { type: String, required: true },
+    degree: { type: String, required: true },
+    period: { type: String, required: true }
+  },
+  { _id: false }
+);
+
+const ProjectSchema = new Schema<Project>(
+  {
+    projectName: { type: String, required: true },
+    projectLink: { type: String, required: true },
+    projectDescription: { type: String }
+  },
+  { _id: false }
+);
+
+const UserSchema = new mongoose.Schema<IUserDocument, UserModel>(
   {
     name: {
       type: String,
@@ -78,16 +122,16 @@ const UserSchema = new mongoose.Schema<Iuser, UserModel, IuserMethods>(
       type: [String],
     },
     experience: {
-      type: [Object],
+      type: [ExperienceSchema],
     },
     education: {
-      type: [Object],
+      type: [EducationSchema],
     },
     profilePhotoLink: {
       type: String,
     },
     projects: {
-      type: [Object],
+      type: [ProjectSchema],
     },
     domain: {
       type: String,
@@ -103,19 +147,22 @@ const UserSchema = new mongoose.Schema<Iuser, UserModel, IuserMethods>(
   { timestamps: true },
 );
 
-// save password in encrypted hash
-UserSchema.pre('save', async function (next) {
+// Save password in encrypted hash
+UserSchema.pre<IUserDocument>('save', async function (next) {
   if (!this.isModified('password')) return next();
   this.password = await bcrypt.hash(this.password, 10);
   return next();
 });
 
-UserSchema.methods.isPasswordCorrect = async function (password: string) {
+UserSchema.methods.isPasswordCorrect = async function (
+  this: IUserDocument,
+  password: string
+) {
   return await bcrypt.compare(password, this.password);
 };
 
 // Short lived token
-UserSchema.methods.generateAccessToken = function () {
+UserSchema.methods.generateAccessToken = function (this: IUserDocument) {
   return jwt.sign(
     {
       _id: this._id,
@@ -127,9 +174,13 @@ UserSchema.methods.generateAccessToken = function () {
   );
 };
 
-UserSchema.methods.generateRefreshToken = function () {
-  return jwt.sign({ _id: this._id }, process.env.REFRESH_TOKEN_SECRET as Secret, { expiresIn: '7d' });
+UserSchema.methods.generateRefreshToken = function (this: IUserDocument) {
+  return jwt.sign(
+    { _id: this._id },
+    process.env.REFRESH_TOKEN_SECRET as Secret,
+    { expiresIn: '7d' }
+  );
 };
 
-const User = mongoose.model<Iuser, UserModel>('User', UserSchema);
+const User = mongoose.model<IUserDocument, UserModel>('User', UserSchema);
 export default User;

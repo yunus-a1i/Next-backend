@@ -1,11 +1,16 @@
-import mongoose, { Types } from 'mongoose';
+import mongoose, { Types, Document, Model } from 'mongoose';
 
-interface Idomain {
+export interface Idomain {
   _id: Types.ObjectId;
   domainName: string;
 }
 
-const domainSchema = new mongoose.Schema<Idomain>(
+export interface IdomainDocument extends Omit<Idomain, '_id'>, Document {
+  _id: Types.ObjectId;
+}
+
+
+const domainSchema = new mongoose.Schema<IdomainDocument>(
   {
     domainName: {
       type: String,
@@ -15,4 +20,4 @@ const domainSchema = new mongoose.Schema<Idomain>(
   { timestamps: true },
 );
 
-export const Domain = mongoose.model<Idomain>('Domain', domainSchema);
+export const Domain: Model<IdomainDocument> = mongoose.model<IdomainDocument>('Domain', domainSchema);

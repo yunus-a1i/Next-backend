@@ -1,13 +1,15 @@
-import mongoose from 'mongoose';
+import mongoose, { type Mongoose } from 'mongoose';
 
-export async function dbConnect() {
+export async function dbConnect(): Promise<void> {
   try {
-    const dbConnectionInstance: mongoose.Mongoose = await mongoose.connect(`${process.env.DATABASE_URL}/${process.env.DB_NAME}`);
+    const dbConnectionInstance: Mongoose = await mongoose.connect(
+      `${process.env.DATABASE_URL as string}/${process.env.DB_NAME as string}`
+    );
     if (dbConnectionInstance) {
       console.log('dbConnectionInstance - ', dbConnectionInstance.connection.host);
     }
-  } catch (error) {
-    console.log('Error in connecting Database', error);
+  } catch (error: unknown) {
+    console.log('Error in connecting Database', error as Error);
     process.exit(1);
   }
 }

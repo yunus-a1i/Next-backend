@@ -1,9 +1,22 @@
 import bcrypt from 'bcryptjs';
-import mongoose, { Model, Types } from 'mongoose';
+import mongoose, { Document, Model, Types, Schema } from 'mongoose';
 import jwt, { type Secret } from 'jsonwebtoken';
 
-export interface Ihr {
-  _id?: Types.ObjectId;
+// Experience and Education Types
+export type HrExperience = {
+  company?: string;
+  position?: string;
+  period?: string;
+  description?: string;
+};
+export type HrEducation = {
+  institution?: string;
+  degree?: string;
+  period?: string;
+};
+
+// HR Base Interface (No _id)
+export interface IhrBase {
   name: string;
   password: string;
   email: string;
@@ -19,31 +32,45 @@ export interface Ihr {
   profilePhotoUrl?: string;
   accessToken?: string;
   refreshToken?: string;
-  bio?:string;
+  bio?: string;
   skills?: string[];
-  experience?: Array<{
-    company?: string;
-    position?: string;
-    period?: string;
-    description?: string;
-  }>;
-  education?: Array<{
-    institution?: string;
-    degree?: string;
-    period?: string;
-  }>;
+  experience?: HrExperience[];
+  education?: HrEducation[];
   role?: string;
 }
 
-export interface IHrMethods {
-  isPasswordCorrect: (password: string) => Promise<boolean>;
-  generateAccessToken: () => string;
-  generateRefreshToken: () => string;
+// HR Document Interface (With _id and Document methods)
+export interface IhrDocument extends IhrBase, Document<Types.ObjectId> {
+  _id: Types.ObjectId;
+  isPasswordCorrect(password: string): Promise<boolean>;
+  generateAccessToken(): string;
+  generateRefreshToken(): string;
 }
 
-export type HrModel = Model<Ihr, {}, IHrMethods>;
+// HR Model Type
+export interface HrModel extends Model<IhrDocument> {}
 
-const HrSchema = new mongoose.Schema<Ihr, HrModel, IHrMethods>(
+// Schema Definitions
+const HrExperienceSchema = new Schema<HrExperience>(
+  {
+    company: String,
+    position: String,
+    period: String,
+    description: String,
+  },
+  { _id: false }
+);
+
+const HrEducationSchema = new Schema<HrEducation>(
+  {
+    institution: String,
+    degree: String,
+    period: String,
+  },
+  { _id: false }
+);
+
+const HrSchema = new mongoose.Schema<IhrDocument, HrModel>(
   {
     name: {
       type: String,
@@ -88,6 +115,9 @@ const HrSchema = new mongoose.Schema<Ihr, HrModel, IHrMethods>(
     state: {
       type: String,
     },
+    country: {
+      type: String,
+    },
     profilePhotoUrl: {
       type: String,
     },
@@ -97,43 +127,33 @@ const HrSchema = new mongoose.Schema<Ihr, HrModel, IHrMethods>(
     refreshToken: {
       type: String,
     },
-    bio:  {
+    bio: {
       type: String,
     },
     skills: [{ type: String }],
-    experience: [
-      {
-        company: String,
-        position: String,
-        period: String,
-        description: String,
-      },
-    ],
-    education: [
-      {
-        institution: String,
-        degree: String,
-        period: String,
-      },
-    ],
+    experience: [HrExperienceSchema],
+    education: [HrEducationSchema],
     role: { type: String, default: "recruiter" },
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
 // save password in encrypted hash
-HrSchema.pre('save', async function (next) {
+HrSchema.pre<IhrDocument>('save', async function (next) {
   if (!this.isModified('password')) return next();
   this.password = await bcrypt.hash(this.password, 10);
   return next();
 });
 
-HrSchema.methods.isPasswordCorrect = async function (password: string) {
+HrSchema.methods.isPasswordCorrect = async function (
+  this: IhrDocument,
+  password: string
+): Promise<boolean> {
   return await bcrypt.compare(password, this.password);
 };
 
 // short lived token
-HrSchema.methods.generateAccessToken = function () {
+HrSchema.methods.generateAccessToken = function (this: IhrDocument): string {
   return jwt.sign(
     {
       _id: this._id,
@@ -141,20 +161,20 @@ HrSchema.methods.generateAccessToken = function () {
       name: this.name,
     },
     process.env.ACCESS_TOKEN_SECRET as Secret,
-    { expiresIn: '2d' },
+    { expiresIn: '2d' }
   );
 };
 
 // long lived token
-HrSchema.methods.generateRefreshToken = function () {
+HrSchema.methods.generateRefreshToken = function (this: IhrDocument): string {
   return jwt.sign(
     {
       _id: this._id,
     },
     process.env.REFRESH_TOKEN_SECRET as Secret,
-    { expiresIn: '7d' },
+    { expiresIn: '7d' }
   );
 };
 
-const Hr = mongoose.model<Ihr, HrModel>('Hr', HrSchema);
+const Hr = mongoose.model<IhrDocument, HrModel>('Hr', HrSchema);
 export default Hr;

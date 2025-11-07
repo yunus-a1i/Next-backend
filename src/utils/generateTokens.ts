@@ -1,13 +1,23 @@
-import type { Types } from 'mongoose';
+import type { Types, Model as MongooseModel, Document } from 'mongoose';
 import type { NextFunction } from 'express';
+import type { IUserDocument } from '../models/userModal.ts';
 
-type tokens = {
+type Tokens = {
   accessToken: string | null;
   refreshToken: string | null;
 };
-export async function generateTokens(id: Types.ObjectId, Model: any, next: NextFunction): Promise<tokens> {
+
+type GenerateTokensModel = MongooseModel<IUserDocument> & {
+  findById(id: Types.ObjectId): Promise<IUserDocument | null>;
+};
+
+export async function generateTokens(
+  id: Types.ObjectId,
+  Model: GenerateTokensModel,
+  next: NextFunction
+): Promise<Tokens> {
   try {
-    const user = await Model.findById({ _id: id });
+    const user: IUserDocument | null = await Model.findById({ _id: id });
     if (!user) {
       return { accessToken: null, refreshToken: null };
     }

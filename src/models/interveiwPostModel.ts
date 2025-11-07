@@ -1,6 +1,7 @@
-import mongoose, { Schema, Types } from 'mongoose';
+import mongoose, { Schema, Types, Document, Model } from 'mongoose';
 
-interface Ipost {
+// Base interface for InterveiwPost
+export interface Ipost {
   _id?: Types.ObjectId;
   hrId: Types.ObjectId;
   domainId: Types.ObjectId;
@@ -23,7 +24,15 @@ interface Ipost {
   featured?: boolean;
 }
 
-const postSchema = new mongoose.Schema<Ipost>(
+// Document interface for Mongoose
+export interface IpostDocument extends Omit<Ipost, '_id'>, Document<Types.ObjectId> {
+  _id: Types.ObjectId;
+}
+
+// Model type for InterveiwPost
+export type InterveiwPostModel = Model<IpostDocument>;
+
+const postSchema = new mongoose.Schema<IpostDocument>(
   {
     hrId: {
       type: Schema.Types.ObjectId,
@@ -107,4 +116,4 @@ const postSchema = new mongoose.Schema<Ipost>(
   { timestamps: true },
 );
 
-export const InterveiwPost = mongoose.model<Ipost>('InterveiwPost', postSchema);
+export const InterveiwPost: InterveiwPostModel = mongoose.model<IpostDocument, InterveiwPostModel>('InterveiwPost', postSchema);
