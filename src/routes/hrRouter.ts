@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { login, logout } from '../auth/auth.ts';
 import { authMiddle } from '../middlewares/authMiddleware.ts';
-import { createHr, deleteHr, getHr, updateHr } from '../controller/hrController.ts';
+import { createHr, deleteHr, getAllPostsByHr, getHr, updateHr } from '../controller/hrController.ts';
 
 const router: Router = Router();
 
@@ -12,5 +12,6 @@ router.route('/createHr').post(createHr);
 router.route('/getHr/:id').get(authMiddle, getHr);
 router.route('/updateHr/:id').put(authMiddle, updateHr);
 router.route('/deleteHr/:id').delete(authMiddle, deleteHr);
+router.route('/getAllPostsByHr/:id/posts').get(getAllPostsByHr);
 
 export default router;

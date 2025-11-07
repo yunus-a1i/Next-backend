@@ -1,10 +1,11 @@
 import type { NextFunction, Request, Response } from 'express';
 import Hr, { type Ihr } from '../models/hrModel.ts';
 import { InterveiwPost } from '../models/interveiwPostModel.ts';
+import mongoose from 'mongoose';
 
 export async function createHr(req: Request, res: Response, next: NextFunction) {
   try {
-    const { name, email, password,contact } = req.body;
+    const { name, email, password, contact } = req.body;
     if (!(name && email && password && contact)) {
       return res.status(400).json({
         success: false,
@@ -24,7 +25,7 @@ export async function createHr(req: Request, res: Response, next: NextFunction) 
     let hr = new Hr<Ihr>({ name: name, email: email, password: password, contact: contact });
     hr = await hr.save();
     // remove password from the user
-    const { password: _, ...userWithoutPassword } = hr.toObject();  
+    const { password: _, ...userWithoutPassword } = hr.toObject();
 
     return res.status(201).json({
       success: true,
@@ -157,10 +158,11 @@ export async function getAllHr(req: Request, res: Response, next: NextFunction) 
 export async function getAllPostsByHr(req: Request, res: Response, next: NextFunction) {
   try {
     const { id } = req.params; // hr id
+
     if (!id) {
       return res.status(400).json({
         success: false,
-        message: 'Hr id is required.',
+        message: 'HR id is required.',
       });
     }
 
@@ -169,12 +171,14 @@ export async function getAllPostsByHr(req: Request, res: Response, next: NextFun
     if (!hrExists) {
       return res.status(404).json({
         success: false,
-        message: 'Hr not found.',
+        message: 'HR not found.',
       });
     }
 
-    // find posts created by this hr
-    const posts = await InterveiwPost.find({ createdBy: id }).sort({ createdAt: -1 });
+    // find posts by correct field name: hrId
+    const posts = await InterveiwPost.find({
+      hrId: new mongoose.Types.ObjectId(id),
+    }).sort({ createdAt: -1 });
 
     return res.status(200).json({
       success: true,
@@ -182,7 +186,7 @@ export async function getAllPostsByHr(req: Request, res: Response, next: NextFun
       data: posts,
     });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     next(error);
   }
 }
