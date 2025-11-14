@@ -1,10 +1,10 @@
 import express, { type Request, type Response } from 'express';
-import userRouter from './routes/userRouter.ts';
-import domainRouter from './routes/domainRouter.ts';
-import hrRouter from './routes/hrRouter.ts';
-import driveAttendiesRouter from './routes/driveAttendiesRouter.ts';
-import interveiwPostRouter from './routes/interveiwPostRouter.ts';
-import adminRouter from './routes/adminRouter.ts';
+import userRouter from './routes/userRouter.js';
+import domainRouter from './routes/domainRouter.js';
+import hrRouter from './routes/hrRouter.js';
+import driveAttendiesRouter from './routes/driveAttendiesRouter.js';
+import interveiwPostRouter from './routes/interveiwPostRouter.js';
+import adminRouter from './routes/adminRouter.js';
 import cors, { type CorsOptions } from 'cors';
 
 const app = express();
@@ -46,3 +46,5 @@ app.get('/', (req: Request, res: Response) => {
 });
 
 export { app };
+
+

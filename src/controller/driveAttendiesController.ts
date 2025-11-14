@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from 'express';
-import { DriveAttendies } from '../models/driveAttendiesModel.ts';
-import { InterveiwPost } from '../models/interveiwPostModel.ts';
+import { DriveAttendies } from '../models/driveAttendiesModel.js';
+import { InterveiwPost } from '../models/interveiwPostModel.js';
 
 export async function CreateDriveAttendies(req: Request, res: Response, next: NextFunction) {
   try {
@@ -47,3 +47,5 @@ export async function CreateDriveAttendies(req: Request, res: Response, next: Ne
     next(error);
   }
 }
+
+

@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { createPost, deletePost, getAllPosts, getAllPostsFull, getPosts, updatePost } from '../controller/interviewPostController.ts';
-import { authMiddle } from '../middlewares/authMiddleware.ts';
+import { createPost, deletePost, getAllPosts, getAllPostsFull, getPosts, updatePost } from '../controller/interviewPostController.js';
+import { authMiddle } from '../middlewares/authMiddleware.js';
 
 const router: Router = Router();
 
@@ -12,3 +12,5 @@ router.route('/getAllPosts').get(getAllPosts);
 router.route('/getAllPosts/full').get(getAllPostsFull);
 
 export default router;
+
+

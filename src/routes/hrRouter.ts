@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import { login, logout } from '../auth/auth.ts';
-import { authMiddle } from '../middlewares/authMiddleware.ts';
-import { createHr, deleteHr, getAllAttendeesByHr, getAllPostsByHr, getHr, updateHr } from '../controller/hrController.ts';
+import { login, logout } from '../auth/auth.js';
+import { authMiddle } from '../middlewares/authMiddleware.js';
+import { createHr, deleteHr, getAllAttendeesByHr, getAllPostsByHr, getHr, updateHr } from '../controller/hrController.js';
 
 const router: Router = Router();
 
@@ -16,3 +16,5 @@ router.route('/getAllPostsByHr/:id/posts').get(getAllPostsByHr);
 router.route('/:id/attendees').get(getAllAttendeesByHr);
 
 export default router;
+
+

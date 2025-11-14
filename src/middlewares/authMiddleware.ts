@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from 'express';
 import jwt, { type JwtPayload, type Secret } from 'jsonwebtoken';
-import User, { type Iuser } from '../models/userModal.ts';
-import Hr, { type IhrDocument } from '../models/hrModel.ts';
+import User, { type Iuser } from '../models/userModal.js';
+import Hr, { type IhrDocument } from '../models/hrModel.js';
 import type { Types } from 'mongoose';
 
 export interface DecodedToken extends JwtPayload {
@@ -56,3 +56,5 @@ export async function authMiddle(
     next(error);
   }
 }
+
+

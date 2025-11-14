@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from 'express';
-import { InterveiwPost } from '../models/interveiwPostModel.ts';
+import { InterveiwPost } from '../models/interveiwPostModel.js';
 
 export async function createPost(req: Request, res: Response, next: NextFunction) {
   try {
@@ -277,3 +277,5 @@ export async function getAllPostsFull(req: Request, res: Response, next: NextFun
     next(error);
   }
 }
+
+

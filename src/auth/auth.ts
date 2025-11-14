@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from 'express';
-import User from '../models/userModal.ts';
-import { generateTokens } from '../utils/generateTokens.ts';
-import Hr from '../models/hrModel.ts';
+import User from '../models/userModal.js';
+import { generateTokens } from '../utils/generateTokens.js';
+import Hr from '../models/hrModel.js';
 
 export async function login(req: Request, res: Response, next: NextFunction) {
   try {
@@ -111,3 +111,5 @@ export async function logout(req: Request, res: Response, next: NextFunction) {
     next(error);
   }
 }
+
+
