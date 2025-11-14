@@ -1,13 +1,14 @@
 import { Router } from 'express';
-import { createPost, deletePost, getAllPosts, getPosts, updatePost } from '../controller/interviewPostController.ts';
+import { createPost, deletePost, getAllPosts, getAllPostsFull, getPosts, updatePost } from '../controller/interviewPostController.ts';
 import { authMiddle } from '../middlewares/authMiddleware.ts';
 
 const router: Router = Router();
 
 router.route('/createpost').post(authMiddle, createPost);
-router.route('/updatepost/:id').put(authMiddle, updatePost);
-router.route('/getposts/:id').get(authMiddle, getPosts);
-router.route('/deletepost/:id').delete(authMiddle, deletePost);
+router.route('/updatePost/:id').put(authMiddle, updatePost);
+router.route('/getPosts/:id').get(authMiddle, getPosts);
+router.route('/deletePost/:id').delete(authMiddle, deletePost);
 router.route('/getAllPosts').get(getAllPosts);
+router.route('/getAllPosts/full').get(getAllPostsFull);
 
 export default router;

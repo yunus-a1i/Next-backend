@@ -2,6 +2,7 @@ import type { NextFunction, Request, Response } from 'express';
 import Hr from '../models/hrModel.ts';
 import { InterveiwPost } from '../models/interveiwPostModel.ts';
 import mongoose from 'mongoose';
+import { DriveAttendies } from '../models/driveAttendiesModel.ts';
 
 export async function createHr(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
   try {
@@ -184,6 +185,69 @@ export async function getAllPostsByHr(req: Request, res: Response, next: NextFun
       success: true,
       message: posts.length > 0 ? 'Posts found.' : 'No posts found for this HR.',
       data: posts,
+    });
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+}
+
+
+export async function getAllAttendeesByHr(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
+  try {
+    const { id } = req.params; // hr id
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: 'HR id is required.',
+      });
+    }
+
+    // verify HR exists
+    const hrExists = await Hr.findById(id);
+    if (!hrExists) {
+      return res.status(404).json({
+        success: false,
+        message: 'HR not found.',
+      });
+    }
+
+    // optional pagination
+    const page = Math.max(parseInt(String(req.query.page || '1'), 10), 1);
+    const limit = Math.max(parseInt(String(req.query.limit || '20'), 10), 1);
+    const skip = (page - 1) * limit;
+
+    // find interview posts created by this HR
+    const posts = await InterveiwPost.find({ hrId: new mongoose.Types.ObjectId(id) }).select('_id').lean();
+    const postIds = posts.map((p) => p._id);
+
+    if (postIds.length === 0) {
+      return res.status(200).json({
+        success: true,
+        message: 'No interview posts found for this HR.',
+        data: [],
+        meta: { page, limit, total: 0 },
+      });
+    }
+
+    // find attendees whose interveiwPostId is in postIds
+    // populate user info (exclude password) and interview post basic info
+    const [attendees, total] = await Promise.all([
+      DriveAttendies.find({ interveiwPostId: { $in: postIds } })
+        .populate({ path: 'userId', select: '-password' })
+        .populate({ path: 'interveiwPostId', select: 'jobTitle company hiringDriveStart hiringDriveEnd' })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      DriveAttendies.countDocuments({ interveiwPostId: { $in: postIds } }),
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      message: attendees.length > 0 ? 'Attendees found.' : 'No attendees found for this HR.',
+      data: attendees,
+      meta: { page, limit, total },
     });
   } catch (error) {
     console.error(error);

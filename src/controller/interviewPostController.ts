@@ -262,3 +262,18 @@ export async function getAllPosts(req: Request, res: Response, next: NextFunctio
   }
 }
 
+export async function getAllPostsFull(req: Request, res: Response, next: NextFunction) {
+  try {
+    const posts = await InterveiwPost.find()
+      .sort({ createdAt: -1 }); // newest first (optional)
+
+    return res.status(200).json({
+      success: true,
+      message: 'All posts fetched successfully.',
+      data: posts,
+      total: posts.length,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
