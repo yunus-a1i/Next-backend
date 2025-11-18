@@ -2,9 +2,7 @@ import mongoose, { type Mongoose } from 'mongoose';
 
 export async function dbConnect(): Promise<void> {
   try {
-    const dbConnectionInstance: Mongoose = await mongoose.connect(
-      `${process.env.DATABASE_URL as string}/${process.env.DB_NAME as string}`
-    );
+    const dbConnectionInstance: Mongoose = await mongoose.connect(`${process.env.DATABASE_URL as string}/${process.env.DB_NAME as string}`);
     if (dbConnectionInstance) {
       console.log('dbConnectionInstance - ', dbConnectionInstance.connection.host);
     }

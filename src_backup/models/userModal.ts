@@ -1,10 +1,5 @@
 import bcrypt from 'bcryptjs';
-import mongoose, {
-  Model,
-  Types,
-  Document,
-  Schema
-} from 'mongoose';
+import mongoose, { Model, Types, Document, Schema } from 'mongoose';
 import jwt, { type Secret } from 'jsonwebtoken';
 
 // Types for embedded experience, education, and project
@@ -66,27 +61,27 @@ const ExperienceSchema = new Schema<Experience>(
     company: { type: String, required: true },
     position: { type: String, required: true },
     period: { type: String, required: true },
-    description: { type: String, required: true }
+    description: { type: String, required: true },
   },
-  { _id: false }
+  { _id: false },
 );
 
 const EducationSchema = new Schema<Education>(
   {
     institution: { type: String, required: true },
     degree: { type: String, required: true },
-    period: { type: String, required: true }
+    period: { type: String, required: true },
   },
-  { _id: false }
+  { _id: false },
 );
 
 const ProjectSchema = new Schema<Project>(
   {
     projectName: { type: String, required: true },
     projectLink: { type: String, required: true },
-    projectDescription: { type: String }
+    projectDescription: { type: String },
   },
-  { _id: false }
+  { _id: false },
 );
 
 const UserSchema = new mongoose.Schema<IUserDocument, UserModel>(
@@ -142,7 +137,7 @@ const UserSchema = new mongoose.Schema<IUserDocument, UserModel>(
     refreshToken: {
       type: String,
     },
-    role: { type: String, default: "candidate" },
+    role: { type: String, default: 'candidate' },
   },
   { timestamps: true },
 );
@@ -154,10 +149,7 @@ UserSchema.pre<IUserDocument>('save', async function (next) {
   return next();
 });
 
-UserSchema.methods.isPasswordCorrect = async function (
-  this: IUserDocument,
-  password: string
-) {
+UserSchema.methods.isPasswordCorrect = async function (this: IUserDocument, password: string) {
   return await bcrypt.compare(password, this.password);
 };
 
@@ -175,11 +167,7 @@ UserSchema.methods.generateAccessToken = function (this: IUserDocument) {
 };
 
 UserSchema.methods.generateRefreshToken = function (this: IUserDocument) {
-  return jwt.sign(
-    { _id: this._id },
-    process.env.REFRESH_TOKEN_SECRET as Secret,
-    { expiresIn: '7d' }
-  );
+  return jwt.sign({ _id: this._id }, process.env.REFRESH_TOKEN_SECRET as Secret, { expiresIn: '7d' });
 };
 
 const User = mongoose.model<IUserDocument, UserModel>('User', UserSchema);

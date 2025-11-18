@@ -10,15 +10,9 @@ export interface DecodedToken extends JwtPayload {
   email: string;
 }
 
-export async function authMiddle(
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<Response | void> {
+export async function authMiddle(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
   try {
-    const token: string | undefined =
-      req.cookies?.accessToken ||
-      req.header('Authorization')?.replace('Bearer ', '');
+    const token: string | undefined = req.cookies?.accessToken || req.header('Authorization')?.replace('Bearer ', '');
 
     if (!token) {
       return res.status(401).json({
@@ -27,19 +21,12 @@ export async function authMiddle(
       }) as Response;
     }
 
-    const decodedToken = jwt.verify(
-      token,
-      process.env.ACCESS_TOKEN_SECRET as Secret
-    ) as DecodedToken;
+    const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET as Secret) as DecodedToken;
 
-    let account: Iuser | IhrDocument | null = await User.findById(decodedToken._id)
-      .select('-password -refreshToken')
-      .exec() as Iuser | null;
+    let account: Iuser | IhrDocument | null = (await User.findById(decodedToken._id).select('-password -refreshToken').exec()) as Iuser | null;
 
     if (!account) {
-      account = (await Hr.findById(decodedToken._id)
-        .select('-password -refreshToken')
-        .exec()) as IhrDocument | null;
+      account = (await Hr.findById(decodedToken._id).select('-password -refreshToken').exec()) as IhrDocument | null;
     }
 
     if (!account) {

@@ -1,70 +1,74 @@
-import type { NextFunction, Request, Response } from 'express';
-import { Domain } from '../models/domainModel.ts';
+import Domain from '../models/domainModel.js';
 
-export async function createDomain(req: Request, res: Response, next: NextFunction) {
+export async function createDomain(req, res, next) {
   try {
     const { domainName } = req.body;
+
     if (!domainName) {
       return res.status(400).json({
         success: false,
-        message: 'DomainName is required.',
-      });
-    }
-    const existingDomain = await Domain.findOne({ domainName: domainName });
-    if (existingDomain) {
-      return res.status(409).json({
-        success: false,
-        message: 'Domain is already exists.',
+        message: 'Domain name is required.',
       });
     }
 
-    let domain = new Domain({ domainName: domainName });
+    const existingDomain = await Domain.findOne({ domainName });
+    if (existingDomain) {
+      return res.status(409).json({
+        success: false,
+        message: 'Domain already exists.',
+      });
+    }
+
+    let domain = new Domain({ domainName });
     domain = await domain.save();
 
     return res.status(201).json({
       success: true,
-      message: 'New domain is created successfully.',
+      message: 'New domain created successfully.',
       data: domain,
     });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     next(error);
   }
 }
 
-export async function getDomain(req: Request, res: Response, next: NextFunction) {
+export async function getDomain(req, res, next) {
   try {
     const { id } = req.params;
+
     if (!id) {
       return res.status(400).json({
         success: false,
         message: 'Domain id is required.',
       });
     }
-    const existingDomain = await Domain.findById(id);
-    if (!existingDomain) {
+
+    const domain = await Domain.findById(id);
+    if (!domain) {
       return res.status(404).json({
         success: false,
-        message: 'Domain is not found.',
+        message: 'Domain not found.',
       });
     }
 
     return res.status(200).json({
       success: true,
       message: 'Domain found.',
-      data: existingDomain,
+      data: domain,
     });
   } catch (error) {
     next(error);
   }
 }
-export async function getAllDomain(req: Request, res: Response, next: NextFunction) {
+
+export async function getAllDomain(req, res, next) {
   try {
     const allDomain = await Domain.find();
 
     return res.status(200).json({
       success: true,
-      message: 'Domain found.',
+      message: 'Domains fetched successfully.',
       data: allDomain.length > 0 ? allDomain : [],
     });
   } catch (error) {
@@ -72,18 +76,21 @@ export async function getAllDomain(req: Request, res: Response, next: NextFuncti
   }
 }
 
-export async function updateDomain(req: Request, res: Response, next: NextFunction) {
+export async function updateDomain(req, res, next) {
   try {
-    const { domainName } = req.body;
     const { id } = req.params;
-    if (!(id && domainName)) {
+    const { domainName } = req.body;
+
+    if (!id || !domainName) {
       return res.status(400).json({
         success: false,
-        message: 'Domain id and name is required.',
+        message: 'Domain id and domain name are required.',
       });
     }
-    const existingDomain = await Domain.findOneAndReplace({ _id: id }, { domainName: domainName }, { new: true });
-    if (!existingDomain) {
+
+    const updatedDomain = await Domain.findByIdAndUpdate(id, { domainName }, { new: true });
+
+    if (!updatedDomain) {
       return res.status(404).json({
         success: false,
         message: 'Domain not found.',
@@ -92,36 +99,38 @@ export async function updateDomain(req: Request, res: Response, next: NextFuncti
 
     return res.status(200).json({
       success: true,
-      message: 'Domain name is updated.',
-      data: existingDomain,
+      message: 'Domain updated successfully.',
+      data: updatedDomain,
     });
   } catch (error) {
     next(error);
   }
 }
 
-export async function deleteDomain(req: Request, res: Response, next: NextFunction) {
+export async function deleteDomain(req, res, next) {
   try {
     const { id } = req.params;
+
     if (!id) {
       return res.status(400).json({
         success: false,
         message: 'Domain id is required.',
       });
     }
-    const data = await Domain.findOneAndDelete({ _id: id });
-    if (!data) {
+
+    const deletedDomain = await Domain.findByIdAndDelete(id);
+
+    if (!deletedDomain) {
       return res.status(404).json({
         success: false,
         message: 'Domain not found.',
-        data: data,
       });
     }
 
     return res.status(200).json({
       success: true,
-      message: 'Domain is deleted successfully.',
-      data: data,
+      message: 'Domain deleted successfully.',
+      data: deletedDomain,
     });
   } catch (error) {
     next(error);

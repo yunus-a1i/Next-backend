@@ -13,13 +13,12 @@
   "license": "ISC",
   "type": "module",
   "author": "",
-  "main": "dist/index.js",
+  "main": "src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon --watch src --ext ts,js --exec ts-node src/index.ts",
-    "build": "tsc -p tsconfig.json",
-    "prettier": "prettier --write **/* --ignore-unknown",
-    "start": "node dist/index.js"
+    "dev": "nodemon --watch src --ext js --exec node src/index.js",
+    "start": "node src/index.js",
+    "prettier": "prettier --write **/* --ignore-unknown"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
@@ -28,15 +27,9 @@
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.18.1",
-    "prettier": "^3.6.2",
-    "typescript": "^5.9.2"
+    "prettier": "^3.6.2"
   },
   "devDependencies": {
-    "@types/cors": "^2.8.19",
-    "@types/express": "^5.0.5",
-    "@types/jsonwebtoken": "^9.0.10",
-    "@types/node": "^20.19.25",
-    "nodemon": "^3.1.11",
-    "ts-node": "^10.9.2"
+    "nodemon": "^3.1.11"
   }
 }

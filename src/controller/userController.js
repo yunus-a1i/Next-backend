@@ -1,17 +1,21 @@
-import type { Request, Response, NextFunction } from 'express';
-import User, { type Iuser } from '../models/userModal.ts';
+import User from '../models/userModal.js';
 
-export async function createUser(req: Request, res: Response, next: NextFunction) {
+/* =========================================================
+   CREATE USER
+========================================================= */
+export async function createUser(req, res, next) {
   try {
     const { name, email, password } = req.body;
+
     if (!(name && email && password)) {
       return res.status(400).json({
         success: false,
         message: 'All fields are required.',
       });
     }
-    // check for existing User
-    const existingUser = await User.findOne({ email: email });
+
+    // Check existing user
+    const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(409).json({
         success: false,
@@ -19,27 +23,30 @@ export async function createUser(req: Request, res: Response, next: NextFunction
       });
     }
 
-    // create new user
-    let user = new User<Iuser>({ name: name, email: email, password: password });
+    // Create new user
+    let user = new User({ name, email, password });
     user = await user.save();
-    // remove password from the user
+
+    // Remove password field
     const { password: _, ...userWithoutPassword } = user.toObject();
 
     return res.status(201).json({
       success: true,
-      message: 'User is created successfully.',
+      message: 'User created successfully.',
       data: userWithoutPassword,
     });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     next(error);
   }
 }
 
-export async function updateUser(req: Request, res: Response, next: NextFunction) {
+/* =========================================================
+   UPDATE USER
+========================================================= */
+export async function updateUser(req, res, next) {
   try {
     const { id } = req.params;
-    const { name, contact, resumeLink, projects, domain, skills, experience, education, bio, profilePhotoLink } = req.body;
 
     if (!id) {
       return res.status(400).json({
@@ -47,6 +54,8 @@ export async function updateUser(req: Request, res: Response, next: NextFunction
         message: 'Id is required.',
       });
     }
+
+    const { name, contact, resumeLink, projects, domain, skills, experience, education, bio, profilePhotoLink } = req.body;
 
     const existingUser = await User.findById(id);
     if (!existingUser) {
@@ -56,7 +65,7 @@ export async function updateUser(req: Request, res: Response, next: NextFunction
       });
     }
 
-    const updates: any = {};
+    const updates = {};
     if (name) updates.name = name;
     if (contact) updates.contact = contact;
     if (resumeLink) updates.resumeLink = resumeLink;
@@ -88,21 +97,26 @@ export async function updateUser(req: Request, res: Response, next: NextFunction
   }
 }
 
-export async function getUser(req: Request, res: Response, next: NextFunction) {
+/* =========================================================
+   GET USER BY ID
+========================================================= */
+export async function getUser(req, res, next) {
   try {
     const id = req.params.id;
+
     if (!id) {
       return res.status(400).json({
         success: false,
         message: 'Id is required.',
       });
     }
-    const user = await User.findById({ _id: id });
+
+    const user = await User.findById(id).select('-password');
+
     if (!user) {
       return res.status(404).json({
         success: false,
         message: 'User not found.',
-        data: user,
       });
     }
 
@@ -117,9 +131,13 @@ export async function getUser(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export async function deleteUser(req: Request, res: Response, next: NextFunction) {
+/* =========================================================
+   DELETE USER
+========================================================= */
+export async function deleteUser(req, res, next) {
   try {
     const id = req.params.id;
+
     if (!id) {
       return res.status(400).json({
         success: false,
@@ -127,18 +145,19 @@ export async function deleteUser(req: Request, res: Response, next: NextFunction
       });
     }
 
-    const existingUser = await User.findOne({ _id: id });
+    const existingUser = await User.findById(id);
     if (!existingUser) {
-      return res.status(400).json({
+      return res.status(404).json({
         success: false,
         message: 'User not found.',
       });
     }
 
     const deletedUser = await User.deleteOne({ _id: id });
+
     return res.status(200).json({
       success: true,
-      message: 'User is deleted succesdfully.',
+      message: 'User deleted successfully.',
       data: deletedUser,
     });
   } catch (error) {
@@ -147,12 +166,16 @@ export async function deleteUser(req: Request, res: Response, next: NextFunction
   }
 }
 
-export async function getAllUser(req: Request, res: Response, next: NextFunction) {
+/* =========================================================
+   GET ALL USERS
+========================================================= */
+export async function getAllUser(req, res, next) {
   try {
-    const user = await User.find();
+    const user = await User.find().select('-password');
+
     return res.status(200).json({
       success: true,
-      message: 'User found.',
+      message: 'Users fetched.',
       data: user,
     });
   } catch (error) {

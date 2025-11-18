@@ -58,7 +58,7 @@ const HrExperienceSchema = new Schema<HrExperience>(
     period: String,
     description: String,
   },
-  { _id: false }
+  { _id: false },
 );
 
 const HrEducationSchema = new Schema<HrEducation>(
@@ -67,7 +67,7 @@ const HrEducationSchema = new Schema<HrEducation>(
     degree: String,
     period: String,
   },
-  { _id: false }
+  { _id: false },
 );
 
 const HrSchema = new mongoose.Schema<IhrDocument, HrModel>(
@@ -133,9 +133,9 @@ const HrSchema = new mongoose.Schema<IhrDocument, HrModel>(
     skills: [{ type: String }],
     experience: [HrExperienceSchema],
     education: [HrEducationSchema],
-    role: { type: String, default: "recruiter" },
+    role: { type: String, default: 'recruiter' },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // save password in encrypted hash
@@ -145,10 +145,7 @@ HrSchema.pre<IhrDocument>('save', async function (next) {
   return next();
 });
 
-HrSchema.methods.isPasswordCorrect = async function (
-  this: IhrDocument,
-  password: string
-): Promise<boolean> {
+HrSchema.methods.isPasswordCorrect = async function (this: IhrDocument, password: string): Promise<boolean> {
   return await bcrypt.compare(password, this.password);
 };
 
@@ -161,7 +158,7 @@ HrSchema.methods.generateAccessToken = function (this: IhrDocument): string {
       name: this.name,
     },
     process.env.ACCESS_TOKEN_SECRET as Secret,
-    { expiresIn: '2d' }
+    { expiresIn: '2d' },
   );
 };
 
@@ -172,7 +169,7 @@ HrSchema.methods.generateRefreshToken = function (this: IhrDocument): string {
       _id: this._id,
     },
     process.env.REFRESH_TOKEN_SECRET as Secret,
-    { expiresIn: '7d' }
+    { expiresIn: '7d' },
   );
 };
 

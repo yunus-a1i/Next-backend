@@ -1,10 +1,10 @@
-import type { NextFunction, Request, Response } from 'express';
-import Hr from '../models/hrModel.ts';
-import { InterveiwPost } from '../models/interveiwPostModel.ts';
+// src/controller/hrController.js
 import mongoose from 'mongoose';
-import { DriveAttendies } from '../models/driveAttendiesModel.ts';
+import Hr from '../models/hrModel.js';
+import DriveAttendies from '../models/driveAttendiesModel.js';
+import InterveiwPost from '../models/interveiwPostModel.js';
 
-export async function createHr(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
+export async function createHr(req, res, next) {
   try {
     const { name, email, password, contact } = req.body;
     if (!(name && email && password && contact)) {
@@ -13,8 +13,9 @@ export async function createHr(req: Request, res: Response, next: NextFunction):
         message: 'All fields are required.',
       });
     }
+
     // check for existing Hr
-    const existingHr = await Hr.findOne({ email: email });
+    const existingHr = await Hr.findOne({ email });
     if (existingHr) {
       return res.status(409).json({
         success: false,
@@ -23,8 +24,9 @@ export async function createHr(req: Request, res: Response, next: NextFunction):
     }
 
     // create new Hr
-    let hr = new Hr({ name: name, email: email, password: password, contact: contact });
+    let hr = new Hr({ name, email, password, contact });
     hr = await hr.save();
+
     // remove password from the user
     const { password: _, ...userWithoutPassword } = hr.toObject();
 
@@ -34,42 +36,85 @@ export async function createHr(req: Request, res: Response, next: NextFunction):
       data: userWithoutPassword,
     });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     next(error);
   }
 }
 
-export async function updateHr(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
+export async function updateHr(req, res, next) {
   try {
-    const { name, location, contact, company, city, state, country } = req.body;
+    const { name, contact, company, city, state, country, bio, skills, experience, education, previousHiredNumber, jobPostCount, totalHiringDriveCount, profilePhotoUrl } =
+      req.body;
+
     const { id } = req.params;
+
     if (!id) {
       return res.status(400).json({
         success: false,
         message: 'Id is required.',
       });
     }
-    const existingHr = await Hr.findById(id);
 
+    const existingHr = await Hr.findById(id);
     if (!existingHr) {
       return res.status(404).json({
         success: false,
         message: 'Hr not found',
       });
     }
-    const updatedHr = await Hr.findByIdAndUpdate(
-      { _id: id },
-      {
-        name: name,
-        contact: contact,
-        location: location,
-        company: company,
-        city: city,
-        state: state,
-        country: country,
-      },
-      { new: true },
-    ).select('-password');
+
+    // Prepare update object
+    const updateFields = {};
+
+    if (name !== undefined) updateFields.name = name;
+    if (contact !== undefined) updateFields.contact = contact;
+    if (company !== undefined) updateFields.company = company;
+    if (city !== undefined) updateFields.city = city;
+    if (state !== undefined) updateFields.state = state;
+    if (country !== undefined) updateFields.country = country;
+    if (bio !== undefined) updateFields.bio = bio;
+    if (profilePhotoUrl !== undefined) updateFields.profilePhotoUrl = profilePhotoUrl;
+    if (previousHiredNumber !== undefined) updateFields.previousHiredNumber = previousHiredNumber;
+    if (jobPostCount !== undefined) updateFields.jobPostCount = jobPostCount;
+    if (totalHiringDriveCount !== undefined) updateFields.totalHiringDriveCount = totalHiringDriveCount;
+
+    // Replace skills array if provided
+    if (skills !== undefined) {
+      if (!Array.isArray(skills)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Skills must be an array.',
+        });
+      }
+      updateFields.skills = skills;
+    }
+
+    // Replace experience array if provided
+    if (experience !== undefined) {
+      if (!Array.isArray(experience)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Experience must be an array.',
+        });
+      }
+      updateFields.experience = experience;
+    }
+
+    // Replace education array if provided
+    if (education !== undefined) {
+      if (!Array.isArray(education)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Education must be an array.',
+        });
+      }
+      updateFields.education = education;
+    }
+
+    const updatedHr = await Hr.findByIdAndUpdate(id, updateFields, {
+      new: true,
+      runValidators: true,
+    }).select('-password');
 
     return res.status(200).json({
       success: true,
@@ -77,12 +122,12 @@ export async function updateHr(req: Request, res: Response, next: NextFunction):
       data: updatedHr,
     });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     next(error);
   }
 }
 
-export async function getHr(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
+export async function getHr(req, res, next) {
   try {
     const { id } = req.params;
     if (!id) {
@@ -92,7 +137,7 @@ export async function getHr(req: Request, res: Response, next: NextFunction): Pr
       });
     }
 
-    const hr = await Hr.findById({ _id: id }).select('-password');
+    const hr = await Hr.findById(id).select('-password');
     if (!hr) {
       return res.status(404).json({
         success: false,
@@ -107,12 +152,12 @@ export async function getHr(req: Request, res: Response, next: NextFunction): Pr
       data: hr,
     });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     next(error);
   }
 }
 
-export async function deleteHr(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
+export async function deleteHr(req, res, next) {
   try {
     const { id } = req.params;
     if (!id) {
@@ -122,9 +167,9 @@ export async function deleteHr(req: Request, res: Response, next: NextFunction):
       });
     }
 
-    const existingHr = await Hr.findOne({ _id: id });
+    const existingHr = await Hr.findById(id);
     if (!existingHr) {
-      return res.status(400).json({
+      return res.status(404).json({
         success: false,
         message: 'Hr not found.',
       });
@@ -133,30 +178,30 @@ export async function deleteHr(req: Request, res: Response, next: NextFunction):
     const deletedHr = await Hr.deleteOne({ _id: id });
     return res.status(200).json({
       success: true,
-      message: 'Hr is deleted succesdfully.',
+      message: 'Hr is deleted successfully.',
       data: deletedHr,
     });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     next(error);
   }
 }
 
-export async function getAllHr(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
+export async function getAllHr(req, res, next) {
   try {
-    const hr = await Hr.find();
+    const hr = await Hr.find().select('-password');
     return res.status(200).json({
       success: true,
       message: 'Hr found.',
       data: hr,
     });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     next(error);
   }
 }
 
-export async function getAllPostsByHr(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
+export async function getAllPostsByHr(req, res, next) {
   try {
     const { id } = req.params; // hr id
 
@@ -192,7 +237,7 @@ export async function getAllPostsByHr(req: Request, res: Response, next: NextFun
   }
 }
 
-export async function getAllAttendeesByHr(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
+export async function getAllAttendeesByHr(req, res, next) {
   try {
     const { id } = req.params; // hr id
     if (!id) {

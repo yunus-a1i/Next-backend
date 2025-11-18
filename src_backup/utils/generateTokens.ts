@@ -11,11 +11,7 @@ type GenerateTokensModel = MongooseModel<IUserDocument> & {
   findById(id: Types.ObjectId): Promise<IUserDocument | null>;
 };
 
-export async function generateTokens(
-  id: Types.ObjectId,
-  Model: GenerateTokensModel,
-  next: NextFunction
-): Promise<Tokens> {
+export async function generateTokens(id: Types.ObjectId, Model: GenerateTokensModel, next: NextFunction): Promise<Tokens> {
   try {
     const user: IUserDocument | null = await Model.findById({ _id: id });
     if (!user) {

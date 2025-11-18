@@ -1,38 +1,9 @@
-import mongoose, { Schema, Types, Document, Model } from 'mongoose';
+// src/models/interveiwPost.js
+import mongoose from 'mongoose';
 
-// Base interface for InterveiwPost
-export interface Ipost {
-  _id?: Types.ObjectId;
-  hrId: Types.ObjectId;
-  domainId: Types.ObjectId;
-  company: string;
-  title: string;
-  description: string;
-  qualification: string;
-  experience: string;
-  hiringDriveStart: string;
-  hiringDriveEnd: string;
-  location: string;
-  address: string;
-  email: string;
-  phone: string;
-  salary: string;
-  vacancies: number;
-  applicants: number;
-  driveStatus: boolean;
-  time?: string;
-  featured?: boolean;
-}
+const { Schema } = mongoose;
 
-// Document interface for Mongoose
-export interface IpostDocument extends Omit<Ipost, '_id'>, Document<Types.ObjectId> {
-  _id: Types.ObjectId;
-}
-
-// Model type for InterveiwPost
-export type InterveiwPostModel = Model<IpostDocument>;
-
-const postSchema = new mongoose.Schema<IpostDocument>(
+const postSchema = new Schema(
   {
     hrId: {
       type: Schema.Types.ObjectId,
@@ -42,7 +13,7 @@ const postSchema = new mongoose.Schema<IpostDocument>(
     domainId: {
       type: Schema.Types.ObjectId,
       ref: 'Domain',
-      // required: true,
+      // required: true
     },
     company: {
       type: String,
@@ -116,4 +87,5 @@ const postSchema = new mongoose.Schema<IpostDocument>(
   { timestamps: true },
 );
 
-export const InterveiwPost: InterveiwPostModel = mongoose.model<IpostDocument, InterveiwPostModel>('InterveiwPost', postSchema);
+const InterveiwPost = mongoose.model('InterveiwPost', postSchema);
+export default InterveiwPost;

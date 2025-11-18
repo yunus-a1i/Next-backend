@@ -1,6 +1,6 @@
-import { Router } from "express";
-import { getAllUser } from "../controller/userController.ts";
-import { getAllHr } from "../controller/hrController.ts";
+import { Router } from 'express';
+import { getAllUser } from '../controller/userController.ts';
+import { getAllHr } from '../controller/hrController.ts';
 
 const router = Router();
 

@@ -5,11 +5,11 @@ export async function createPost(req: Request, res: Response, next: NextFunction
   try {
     const {
       hrId,
-      jobTitle,
+      title,
       company,
       description,
       qualification,
-      experienceRequired,
+      experience,
       hiringDriveStart,
       hiringDriveEnd,
       location,
@@ -17,7 +17,7 @@ export async function createPost(req: Request, res: Response, next: NextFunction
       email,
       phone,
       salary,
-      openVacancies,
+      vacancies,
       driveStatus,
       domainId,
     } = req.body;
@@ -26,11 +26,11 @@ export async function createPost(req: Request, res: Response, next: NextFunction
     if (
       !(
         hrId &&
-        jobTitle &&
+        title &&
         company &&
         description &&
         qualification &&
-        experienceRequired &&
+        experience &&
         hiringDriveStart &&
         hiringDriveEnd &&
         location &&
@@ -38,7 +38,7 @@ export async function createPost(req: Request, res: Response, next: NextFunction
         email &&
         phone &&
         salary &&
-        openVacancies &&
+        vacancies &&
         driveStatus
       )
     ) {
@@ -52,11 +52,11 @@ export async function createPost(req: Request, res: Response, next: NextFunction
     let post = new InterveiwPost({
       hrId,
       domainId,
-      jobTitle,
+      title,
       company,
       description,
       qualification,
-      experienceRequired,
+      experience,
       hiringDriveStart,
       hiringDriveEnd,
       location,
@@ -64,7 +64,7 @@ export async function createPost(req: Request, res: Response, next: NextFunction
       email,
       phone,
       salary,
-      openVacancies,
+      vacancies,
       driveStatus,
     });
 
@@ -84,10 +84,10 @@ export async function updatePost(req: Request, res: Response, next: NextFunction
   const {
     hrId,
     domainId,
-    jobTitle,
+    title,
     description,
     qualification,
-    experienceRequired,
+    experience,
     hiringDriveStart,
     hiringDriveEnd,
     location,
@@ -95,7 +95,7 @@ export async function updatePost(req: Request, res: Response, next: NextFunction
     email,
     phone,
     salary,
-    openVacancies,
+    vacancies,
     driveStatus,
   } = req.body;
 
@@ -105,10 +105,10 @@ export async function updatePost(req: Request, res: Response, next: NextFunction
       id &&
       hrId &&
       domainId &&
-      jobTitle &&
+      title &&
       description &&
       qualification &&
-      experienceRequired &&
+      experience &&
       hiringDriveStart &&
       hiringDriveEnd &&
       location &&
@@ -116,7 +116,7 @@ export async function updatePost(req: Request, res: Response, next: NextFunction
       email &&
       phone &&
       salary &&
-      openVacancies &&
+      vacancies &&
       driveStatus
     )
   ) {
@@ -132,10 +132,10 @@ export async function updatePost(req: Request, res: Response, next: NextFunction
     },
     {
       domainId: domainId,
-      jobTitle: jobTitle,
+      title: title,
       description: description,
       qualification: qualification,
-      experienceRequired: experienceRequired,
+      experience: experience,
       hiringDriveStart: hiringDriveStart,
       hiringDriveEnd: hiringDriveEnd,
       location: location,
@@ -143,7 +143,7 @@ export async function updatePost(req: Request, res: Response, next: NextFunction
       email: email,
       phone: phone,
       salary: salary,
-      openVacancies: openVacancies,
+      vacancies: vacancies,
       driveStatus: driveStatus,
     },
     { new: true },
@@ -232,7 +232,7 @@ export async function getAllPosts(req: Request, res: Response, next: NextFunctio
   try {
     // Parse query params with defaults
     const limit = parseInt(req.query.limit as string) || 4; // number of posts per request
-    const page = parseInt(req.query.page as string) || 1;   // current page (1-based)
+    const page = parseInt(req.query.page as string) || 1; // current page (1-based)
 
     // Calculate skip count
     const skip = (page - 1) * limit;
@@ -264,8 +264,7 @@ export async function getAllPosts(req: Request, res: Response, next: NextFunctio
 
 export async function getAllPostsFull(req: Request, res: Response, next: NextFunction) {
   try {
-    const posts = await InterveiwPost.find()
-      .sort({ createdAt: -1 }); // newest first (optional)
+    const posts = await InterveiwPost.find().sort({ createdAt: -1 }); // newest first (optional)
 
     return res.status(200).json({
       success: true,

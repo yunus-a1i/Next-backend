@@ -9,7 +9,6 @@ export interface IdomainDocument extends Omit<Idomain, '_id'>, Document {
   _id: Types.ObjectId;
 }
 
-
 const domainSchema = new mongoose.Schema<IdomainDocument>(
   {
     domainName: {

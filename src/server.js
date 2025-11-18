@@ -1,15 +1,16 @@
-import express, { type Request, type Response } from 'express';
-import userRouter from './routes/userRouter.ts';
-import domainRouter from './routes/domainRouter.ts';
-import hrRouter from './routes/hrRouter.ts';
-import driveAttendiesRouter from './routes/driveAttendiesRouter.ts';
-import interveiwPostRouter from './routes/interveiwPostRouter.ts';
-import adminRouter from './routes/adminRouter.ts';
-import cors, { type CorsOptions } from 'cors';
+import express from 'express';
+import userRouter from './routes/userRouter.js';
+import domainRouter from './routes/domainRouter.js';
+import hrRouter from './routes/hrRouter.js';
+import driveAttendiesRouter from './routes/driveAttendiesRouter.js';
+import interveiwPostRouter from './routes/interveiwPostRouter.js';
+import adminRouter from './routes/adminRouter.js';
+import bookmarkRouter from './routes/bookmarkRouter.js'
+import cors from 'cors';
 
 const app = express();
 
-const corsOptions: CorsOptions = {
+const corsOptions = {
   origin: 'http://localhost:5173',
   credentials: true,
 };
@@ -34,11 +35,14 @@ app.use('/api/drive', driveAttendiesRouter);
 // interviewPost routes
 app.use('/api/post', interveiwPostRouter);
 
+// bookmark routes
+app.use('/api/bookmark', bookmarkRouter);
+
 // admin routes
 app.use('/api/admin', adminRouter);
 
 // serverHealth
-app.get('/', (req: Request, res: Response) => {
+app.get('/', (req, res) => {
   return res.status(200).json({
     success: true,
     message: 'Server is 100% healthy.',
