@@ -6,6 +6,7 @@ import driveAttendiesRouter from './routes/driveAttendiesRouter.js';
 import interveiwPostRouter from './routes/interveiwPostRouter.js';
 import adminRouter from './routes/adminRouter.js';
 import bookmarkRouter from './routes/bookmarkRouter.js'
+import authGoogleRoutes from './routes/authGoogle.js';
 import cors from 'cors';
 
 const app = express();
@@ -40,6 +41,9 @@ app.use('/api/bookmark', bookmarkRouter);
 
 // admin routes
 app.use('/api/admin', adminRouter);
+
+// google auth
+app.use('/api/auth/google', authGoogleRoutes);
 
 // serverHealth
 app.get('/', (req, res) => {
