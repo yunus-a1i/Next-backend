@@ -1,11 +1,8 @@
-// src/models/hrModel.js
 import bcrypt from 'bcryptjs';
 import mongoose from 'mongoose';
 import jwt from 'jsonwebtoken';
 
 const { Schema } = mongoose;
-
-/* ------------------ Embedded Schemas ------------------ */
 
 const HrExperienceSchema = new Schema(
   {
@@ -26,8 +23,6 @@ const HrEducationSchema = new Schema(
   { _id: false },
 );
 
-/* ------------------ Main HR Schema ------------------ */
-
 const HrSchema = new Schema(
   {
     name: {
@@ -41,15 +36,30 @@ const HrSchema = new Schema(
       unique: true,
       minLength: [1, 'Email is required.'],
     },
+
+    // 👇 NEW: authProvider + googleId
+    authProvider: {
+      type: String,
+      enum: ['local', 'google'],
+      default: 'local',
+    },
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
+
     password: {
       type: String,
-      required: true,
+      required: function () {
+        return this.authProvider === 'local';
+      },
       minLength: [1, 'Password is required.'],
     },
     contact: {
       type: String,
       unique: true,
-      required: true,
+      required: false, // relax for Google users; you can enforce later in UI
       minLength: [10, 'Contact number is required.'],
     },
 
@@ -76,11 +86,9 @@ const HrSchema = new Schema(
   { timestamps: true },
 );
 
-/* ------------------ Hooks ------------------ */
-
 HrSchema.pre('save', async function (next) {
   try {
-    if (!this.isModified('password')) return next();
+    if (!this.isModified('password') || !this.password) return next();
     this.password = await bcrypt.hash(this.password, 10);
     return next();
   } catch (err) {
@@ -88,9 +96,8 @@ HrSchema.pre('save', async function (next) {
   }
 });
 
-/* ------------------ Instance Methods ------------------ */
-
 HrSchema.methods.isPasswordCorrect = async function (password) {
+  if (!this.password) return false;
   return bcrypt.compare(password, this.password);
 };
 
@@ -100,6 +107,7 @@ HrSchema.methods.generateAccessToken = function () {
       _id: this._id,
       email: this.email,
       name: this.name,
+      role: this.role,
     },
     process.env.ACCESS_TOKEN_SECRET,
     { expiresIn: '2d' },
@@ -115,8 +123,6 @@ HrSchema.methods.generateRefreshToken = function () {
     { expiresIn: '7d' },
   );
 };
-
-/* ------------------ Export Model ------------------ */
 
 const Hr = mongoose.model('Hr', HrSchema);
 export default Hr;
